@@ -8,14 +8,18 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.mservices.propostaapp.dto.PropostaRequestDTO;
 import com.mservices.propostaapp.dto.PropostaResponseDTO;
+import com.mservices.propostaapp.service.PropostaService;
 
 @RestController
 @RequestMapping("/proposta")
 public class PropostaController {
 
+  private PropostaService propostaService;
+
   @PostMapping
   public ResponseEntity<PropostaResponseDTO> criar(@RequestBody PropostaRequestDTO requestDto) {
-    return null;
+    PropostaResponseDTO response = propostaService.criar(requestDto);
+    return ResponseEntity.ok(response);
 
   }
 }
