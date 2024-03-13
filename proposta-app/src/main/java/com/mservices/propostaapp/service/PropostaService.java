@@ -2,6 +2,7 @@ package com.mservices.propostaapp.service;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.mservices.propostaapp.dto.PropostaRequestDTO;
@@ -10,9 +11,6 @@ import com.mservices.propostaapp.entity.Proposta;
 import com.mservices.propostaapp.mapper.PropostaMapper;
 import com.mservices.propostaapp.repository.PropostaRepository;
 
-import lombok.AllArgsConstructor;
-
-@AllArgsConstructor
 @Service
 public class PropostaService {
 
@@ -20,12 +18,24 @@ public class PropostaService {
 
   private NotificacaoService notificacaoService;
 
+  @Value("${rabbitmq.propostapendente.exchange}")
+  private String exchange;
+
+  public PropostaService(PropostaRepository propostaRepository,
+      NotificacaoService notificacaoService,
+      @Value("${rabbitmq.propostapendente.exchange}") String exchange) {
+
+    this.propostaRepository = propostaRepository;
+    this.notificacaoService = notificacaoService;
+    this.exchange = exchange;
+  }
+
   public PropostaResponseDTO criar(PropostaRequestDTO requestDto) {
     Proposta proposta = PropostaMapper.INSTANCE.converteDtoToProposta(requestDto);
     propostaRepository.save(proposta);
 
     PropostaResponseDTO response = PropostaMapper.INSTANCE.convertEntityToDto(proposta);
-    notificacaoService.notificar(response, "proposta-pendente.ex");
+    notificacaoService.notificar(response, exchange);
 
     return response;
 
