@@ -34,14 +34,29 @@ public class PropostaService {
     Proposta proposta = PropostaMapper.INSTANCE.converteDtoToProposta(requestDto);
     propostaRepository.save(proposta);
 
-    PropostaResponseDTO response = PropostaMapper.INSTANCE.convertEntityToDto(proposta);
-    notificacaoService.notificar(response, exchange);
+    notificarRabbitMQ(proposta);
 
-    return response;
+    return PropostaMapper.INSTANCE.convertEntityToDto(proposta);
 
   }
 
   public List<PropostaResponseDTO> obterProposta() {
     return PropostaMapper.INSTANCE.convertListEntityToListDto(propostaRepository.findAll());
+  }
+
+  /*
+   * metodo para notificar quando o rabbit estiver fora do ar
+   * ele pega a proposta e set para falsa e depois vou fazer um
+   * metodo para repassar essas proposta falsas no rabbitMQ
+   */
+  private void notificarRabbitMQ(Proposta proposta) {
+    try {
+      notificacaoService.notificar(proposta, exchange);
+
+    } catch (RuntimeException ex) {
+      proposta.setIntegrada(false);
+      propostaRepository.save(proposta);
+
+    }
   }
 }
