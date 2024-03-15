@@ -9,7 +9,7 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 @Service
-public class NotificacaoService {
+public class NotificacaoRabbitService {
 
   private RabbitTemplate rabbitTemplate;
 
