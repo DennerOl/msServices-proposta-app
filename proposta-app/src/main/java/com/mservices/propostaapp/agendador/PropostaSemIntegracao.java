@@ -15,11 +15,11 @@ import com.mservices.propostaapp.service.NotificacaoRabbitService;
 @Component
 public class PropostaSemIntegracao {
 
-  private PropostaRepository propostaRepository;
+  private final PropostaRepository propostaRepository;
 
-  private NotificacaoRabbitService notificacaoRabbitService;
+  private final NotificacaoRabbitService notificacaoRabbitService;
 
-  private String exchange;
+  private final String exchange;
 
   public PropostaSemIntegracao(PropostaRepository propostaRepository,
       NotificacaoRabbitService notificacaoRabbitService,
@@ -34,7 +34,6 @@ public class PropostaSemIntegracao {
 
   @Scheduled(fixedDelay = 10, timeUnit = TimeUnit.SECONDS)
   public void buscarPropostaSemIntegracao() {
-
     propostaRepository.findAllByIntegradaIsFalse().forEach(proposta -> {
 
       try {
