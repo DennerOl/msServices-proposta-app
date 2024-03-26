@@ -2,6 +2,7 @@ package com.mservices.propostaapp.service;
 
 import java.util.List;
 
+import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -34,7 +35,12 @@ public class PropostaService {
     Proposta proposta = PropostaMapper.INSTANCE.converteDtoToProposta(requestDto);
     propostaRepository.save(proposta);
 
-    notificarRabbitMQ(proposta);
+    int prioridade = proposta.getUsuario().getRenda() > 10000 ? 10 : 5;
+    MessagePostProcessor messagePostProcessor = message -> {
+      message.getMessageProperties().setPriority(prioridade);
+      return message;
+    };
+    notificarRabbitMQ(proposta, messagePostProcessor);
 
     return PropostaMapper.INSTANCE.convertEntityToDto(proposta);
 
@@ -49,9 +55,9 @@ public class PropostaService {
    * ele pega a proposta e set para falsa e depois vou fazer um
    * metodo para repassar essas proposta falsas no rabbitMQ
    */
-  private void notificarRabbitMQ(Proposta proposta) {
+  private void notificarRabbitMQ(Proposta proposta, MessagePostProcessor messagePostProcessor) {
     try {
-      notificacaoRabbitService.notificar(proposta, exchange);
+      notificacaoRabbitService.notificar(proposta, exchange, messagePostProcessor);
 
     } catch (RuntimeException ex) {
       proposta.setIntegrada(false);
