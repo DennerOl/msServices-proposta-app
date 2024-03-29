@@ -1,0 +1,39 @@
+version: "3.5"
+#passo os containers ligados no meu docker proposta, rabbit, postgres
+services:
+  proposta-app:
+    image: proposta-app
+    ports:
+      - "8080:8080"
+    #aponto para o perfil prod do applicationProprities
+    environment:
+      spring.profiles.active: prod
+    #diz que o proposta-app depende do rabbit está rodando para rodar
+    depends_on:
+      rabbit-mq:
+        condition: service_healthy
+  rabbit-mq:
+    image: rabbitmq:3-management
+    #manda um ping para verificar se o rabbit está rodando mesmo
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      timeout: 5s
+      interval: 5s
+      retries: 3
+  db:
+    image: postgres
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_PASSWORD: 1234567
+      POSTGRES_DB: propostadb
+
+  pgadmin:
+    image: dpage/pgadmin4
+    ports:
+      - "5050:80"
+    container_name: pgadmin_container
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: dener155@hotmail.com
+      PGADMIN_DEFAULT_PASSWORD: 123456
